@@ -66,3 +66,27 @@ vcpkg_installed/
 # test output & cache
 Testing/
 .cache/
+
+# Visual Studio / MSBuild
+.vs/
+[Xx]64/
+[Ww]in32/
+[Dd]ebug/
+[Rr]elease/
+*.tlog
+*.idb
+*.iobj
+*.ipdb
+*.suo
+*.user
+*.ipch
+*.aps
+*.VC.db
+*.VC.opendb
+unsuccessfulbuild
+*.recipe
+
+# freeglut é vendorizado neste repositório: força a inclusão dos binários
+!**/freeglut/**
+!**/freeglut/**/*.lib
+!**/freeglut/**/*.dll
