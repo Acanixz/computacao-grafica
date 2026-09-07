@@ -10,7 +10,7 @@ struct Poligono {
 	double tamanhoLado;
 	int numLados;
 	vertice posicao;
-	vertice escala;
+	std::pair<double, double> escala;
 	double rotacao;
 	lista_vertices vertices;
 	lista_arestas arestas;
@@ -21,25 +21,28 @@ void desenhar(Poligono poligono);
 void movimentar(Poligono& poligono, double distancia, double angulo);
 void escalar(Poligono& poligono, double escala_x, double escala_y);
 void rotacionar(Poligono& poligono, double angulo);
+
 void display();
 void redraw(int value);
 void keyboard(unsigned char key, int x, int y);
 void keyboard_special(int key, int x, int y);
 
 Poligono pentagono;
+float velocidadeRotacao = 0;
 int delay = 10;
 
 int main(int argc, char** argv) {
 
-	pentagono = criar_poligono(128, 128, 30, 5);
+	pentagono = criar_poligono(128, 128, 50, 5);
 
 	glutInit(&argc, argv);
 
 	glutInitWindowSize(512, 512);
 
-	glutCreateWindow("Desenhando uma linha");
-	glClearColor(1.0, 1.0, 1.0, 1.0);
-	glOrtho(0, 256, 0, 256, -1, 1);
+	glutCreateWindow("Desenhando um Pol�gono");
+
+	glClearColor(1, 1, 1, 0);
+	glOrtho(0, 255, 0, 255, -1, 1);
 
 	glutDisplayFunc(display);
 	glutKeyboardFunc(keyboard);
@@ -66,8 +69,17 @@ void keyboard(unsigned char key, int x, int y) {
 	case 27:
 		exit(0);
 		break;
-	case ' ':
+	case 'o':
+		escalar(pentagono, 0.9, 0.9);
+		break;
+	case 'p':
 		escalar(pentagono, 1.1, 1.1);
+		break;
+	case 'k':
+		velocidadeRotacao -= 0.01;
+		break;
+	case 'l':
+		velocidadeRotacao += 0.01;
 		break;
 	}
 }
@@ -95,6 +107,8 @@ void keyboard_special(int key, int x, int y) {
 }
 
 void redraw(int value) {
+	rotacionar(pentagono, velocidadeRotacao);
+
 	glutPostRedisplay();
 	glutTimerFunc(delay, redraw, 0);
 }
@@ -140,23 +154,62 @@ Poligono criar_poligono(double posicao_x, double posicao_y, double tamanho_lado,
 }
 
 void movimentar(Poligono& poligono, double distancia, double angulo) {
-	
+	poligono.posicao.first = poligono.posicao.first + distancia * cos(angulo);
+	poligono.posicao.second = poligono.posicao.second + distancia * sin(angulo);
+
+	for (int i = 0; i < poligono.numLados; i++) {
+		poligono.vertices[i].first = poligono.vertices[i].first + distancia * cos(angulo);
+		poligono.vertices[i].second = poligono.vertices[i].second + distancia * sin(angulo);
+	}
+
 }
 
 void escalar(Poligono& poligono, double escala_x, double escala_y) {
-	
+	poligono.escala.first *= escala_x;
+	poligono.escala.second *= escala_y;
+
+	poligono.posicao.first = poligono.posicao.first;
+	poligono.posicao.second = poligono.posicao.second;
+
+	for (int i = 0; i < poligono.numLados; i++) {
+		poligono.vertices[i].first -= poligono.posicao.first;
+		poligono.vertices[i].second -= poligono.posicao.second;
+
+		poligono.vertices[i].first = poligono.vertices[i].first * escala_x;
+		poligono.vertices[i].second = poligono.vertices[i].second * escala_y;
+
+		poligono.vertices[i].first += poligono.posicao.first;
+		poligono.vertices[i].second += poligono.posicao.second;
+	}
 }
 
 void rotacionar(Poligono& poligono, double angulo) {
 
+	poligono.rotacao += angulo;
+
+	for (int i = 0; i < poligono.arestas.size(); i++) {
+		poligono.vertices[i].first -= poligono.posicao.first;
+		poligono.vertices[i].second -= poligono.posicao.second;
+
+		float novoX = poligono.vertices[i].first * cos(angulo) - poligono.vertices[i].second * sin(angulo);
+		float novoY = poligono.vertices[i].second = poligono.vertices[i].first * sin(angulo) + poligono.vertices[i].second * cos(angulo);
+
+		poligono.vertices[i].first = novoX;
+		poligono.vertices[i].second = novoY;
+
+		poligono.vertices[i].first += poligono.posicao.first;
+		poligono.vertices[i].second += poligono.posicao.second;
+	}
+
 }
 
 void desenhar(Poligono poligono) {
-	glColor3f(0.0, 0.0, 0.0);
+	glColor3f(0, 0, 0);
 	glBegin(GL_LINES);
 	for (int i = 0; i < poligono.arestas.size(); i++) {
 		float v_o = poligono.arestas[i].first;
 		float v_d = poligono.arestas[i].second;
+
 		glVertex2f(poligono.vertices[v_o].first, poligono.vertices[v_o].second);
 		glVertex2f(poligono.vertices[v_d].first, poligono.vertices[v_d].second);
 	}
