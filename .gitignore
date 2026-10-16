@@ -90,3 +90,6 @@ unsuccessfulbuild
 !**/freeglut/**
 !**/freeglut/**/*.lib
 !**/freeglut/**/*.dll
+
+# Modelos 3D do trabalho M2 (Wavefront .obj, não são objetos do compilador)
+!**/modelos/*.obj
